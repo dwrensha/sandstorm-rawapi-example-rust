@@ -172,9 +172,9 @@ impl WebSession {
         // Note that such attacks wouldn't actually accomplish much since everything outside /var
         // is a read-only filesystem anyway, containing the app package contents which are non-secret.
 
-        for component in path.split("/") {
-            if component == "" || component == "." || component == ".." {
-                return Err(Error::failed(format!("non-canonical path: {}", path)));
+        for (idx, component) in path.split_terminator("/").enumerate() {
+            if component == "." || component == ".." || (component == "" && idx > 0) {
+                return Err(Error::failed(format!("non-canonical path: {:?}", path)));
             }
         }
         Ok(())
