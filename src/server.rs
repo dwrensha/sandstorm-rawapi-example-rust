@@ -27,13 +27,6 @@ use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 use grain_capnp::{ui_view, ui_session};
 use web_session_capnp::{web_session};
 
-#[derive(Clone, Copy)]
-pub struct UiView;
-
-impl ui_view::Server for UiView {
-
-}
-
 pub struct WebSession {
     can_write: bool,
 }
@@ -134,6 +127,55 @@ impl WebSession {
                 Promise::err(e.into())
             }
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct UiView;
+
+impl ui_view::Server for UiView {
+    fn get_view_info(&mut self,
+                     _params: ui_view::GetViewInfoParams,
+                     _results: ui_view::GetViewInfoResults)
+                     -> Promise<(), Error>
+    {
+        Promise::ok(())
+/*
+    auto viewInfo = context.initResults();
+
+    // Define a "write" permission, and then define roles "editor" and "viewer" where only "editor"
+    // has the "write" permission. This will allow people to share read-only.
+    auto perms = viewInfo.initPermissions(1);
+    auto write = perms[0];
+    write.setName("write");
+    write.initTitle().setDefaultText("write");
+
+    auto roles = viewInfo.initRoles(2);
+    auto editor = roles[0];
+    editor.initTitle().setDefaultText("editor");
+    editor.initVerbPhrase().setDefaultText("can edit");
+    editor.initPermissions(1).set(0, true);   // has "write" permission
+    auto viewer = roles[1];
+    viewer.initTitle().setDefaultText("viewer");
+    viewer.initVerbPhrase().setDefaultText("can view");
+    viewer.initPermissions(1).set(0, false);  // does not have "write" permission
+
+    return kj::READY_NOW;
+         */
+    }
+
+
+    fn new_session(&mut self,
+                   _params: ui_view::NewSessionParams,
+                   mut results: ui_view::NewSessionResults)
+                   -> Promise<(), Error>
+    {
+        let client: web_session::Client =
+            web_session::ToClient::new(WebSession::new()).from_server::<::capnp_rpc::Server>();
+
+        // we need to do this dance to upcast.
+        results.get().set_session(ui_session::Client { client : client.client});
+        Promise::ok(())
     }
 }
 
