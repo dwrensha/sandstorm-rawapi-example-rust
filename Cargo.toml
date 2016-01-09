@@ -1,0 +1,24 @@
+[package]
+
+name = "sandstorm-raw-api-example"
+version = "0.0.1"
+authors = [ "David Renshaw <dwrenshaw@gmail.com>" ]
+build = "build.rs"
+
+[[bin]]
+
+name = "server"
+path = "src/main.rs"
+
+[build-dependencies.capnpc]
+git = "https://github.com/dwrensha/capnpc-rust.git"
+
+[dependencies]
+gj = "*"
+
+[dependencies.capnp]
+git = "https://github.com/dwrensha/capnproto-rust.git"
+
+[dependencies.capnp-rpc]
+git = "https://github.com/dwrensha/capnp-rpc-rust.git"
+
