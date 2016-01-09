@@ -133,6 +133,35 @@ impl web_session::Server for WebSession {
         }
         Promise::ok(())
     }
+
+    fn delete(&mut self,
+              params: web_session::DeleteParams,
+              mut results: web_session::DeleteResults)
+	-> Promise<(), Error>
+    {
+        // HTTP DELETE request.
+
+        let path = pry!(pry!(params.get()).get_path());
+        //requireCanonicalPath(path);
+
+        if !path.starts_with("var/") {
+            return Promise::err(Error::failed("DELETE only supported under /var.".to_string()));
+        }
+
+        if !self.can_write {
+            results.get().init_client_error()
+                .set_status_code(web_session::response::ClientErrorCode::Forbidden);
+            Promise::ok(())
+        } else {
+            if let Err(e) = ::std::fs::remove_file(path) {
+                if e.kind() != ::std::io::ErrorKind::NotFound {
+                    return Promise::err(e.into())
+                }
+            }
+            results.get().init_no_content();
+            Promise::ok(())
+        }
+    }
 }
 
 impl WebSession {
