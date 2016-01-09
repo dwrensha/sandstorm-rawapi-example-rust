@@ -53,12 +53,18 @@ impl web_session::Server for WebSession {
 
         if path == "var" || path == "var/" {
             // Return a listing of the directory contents, one per line.
-/*
-            auto text = kj::strArray(listDirectory("var"), "\n");
-            auto response = context.getResults().initContent();
-            response.setMimeType("text/plain");
-            response.getBody().setBytes(
-                kj::arrayPtr(reinterpret_cast<byte*>(text.begin()), text.size()));*/
+            let mut entries = Vec::new();
+            for entry in pry!(::std::fs::read_dir(path)) {
+                let entry = pry!(entry);
+                let name = entry.file_name().into_string().expect("bad file name");
+                if (&name != ".") && (&name != "..") {
+                    entries.push(name);
+                }
+            }
+            let text = entries.join("\n");
+            let mut response = results.get().init_content();
+            response.set_mime_type("text/plain");
+            response.init_body().set_bytes(text.as_bytes());
             Promise::ok(())
         } else if path.starts_with("var/") {
             // Serve all files under /var with type application/octet-stream since it comes from the
@@ -95,6 +101,37 @@ impl web_session::Server for WebSession {
                 self.read_file(&filename, results, self.infer_content_type(path))
             }
         }
+    }
+
+    fn put(&mut self,
+           params: web_session::PutParams,
+           mut results: web_session::PutResults)
+	-> Promise<(), Error>
+    {
+        // HTTP PUT request.
+
+        let params = pry!(params.get());
+        let path = pry!(params.get_path());
+        //requireCanonicalPath(path);
+
+        if !path.starts_with("var/") {
+            return Promise::err(Error::failed("PUT only supported under /var.".to_string()));
+        }
+
+        if !self.can_write {
+            results.get().init_client_error()
+                .set_status_code(web_session::response::ClientErrorCode::Forbidden);
+        } else {
+            use std::io::Write;
+            let temp_path = format!("{}.uploading", path);
+            let data = pry!(pry!(params.get_content()).get_content());
+
+            pry!(pry!(::std::fs::File::create(&temp_path)).write_all(data));
+
+            pry!(::std::fs::rename(temp_path, path));
+            results.get().init_no_content();
+        }
+        Promise::ok(())
     }
 }
 
