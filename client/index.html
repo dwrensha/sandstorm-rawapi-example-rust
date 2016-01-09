@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sandstorm Raw API sample app</title>
+    <meta charset="utf-8">
+    <script type="text/javascript">
+function fetch(url, options) {
+  // Somewhat pleasant wrapper around XHR.
+  options = options || {};
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      if (xhr.status >= 400) {
+        reject(new Error("XHR returned status " + xhr.status + ":\n" + xhr.responseText));
+      } else {
+        resolve(xhr);
+      }
+    };
+    xhr.onerror = function(e) { reject(e); };
+    if (options.hasOwnProperty('responseType'))
+      xhr.responseType = options.responseType;
+    var method = 'get';
+    if (options.hasOwnProperty('method'))
+      method = options.method;
+    xhr.open(method, url)
+    var data = undefined;
+    if (options.hasOwnProperty('data'))
+      data = options.data;
+    xhr.send(data);
+  });
+}
+function doGet(url) {
+  return fetch(url);
+}
+function doPost(url, data) {
+  return fetch(url, { method: "post", data: data });
+}
+function doPut(url, data) {
+  return fetch(url, { method: "put", data: data });
+}
+function doDelete(url) {
+  return fetch(url, { method: "delete" });
+}
+function queryContent() {
+  // Load the textarea content from the server. Called at startup.
+  doGet("/var/content").then(function (xhr) {
+    document.querySelector("#content").value = xhr.responseText;
+  }, function (err) {
+    // Probably failed because we just created the grain and so the file 404'd.
+    console.error(err.stack);
+  });
+  doGet("/.can-write").then(function (xhr) {
+    if (xhr.responseText == "true") {
+      document.getElementById("writable").style.display = "block";
+    } else if (xhr.responseText == "false") {
+      document.getElementById("read-only").style.display = "block";
+      document.querySelector("#content").disabled = true;
+    } else {
+      console.error("didn't understand response for GET /.can-write:", xhr.responseText);
+    }
+  });
+}
+function updateContent() {
+  // PUT the textarea content back to the server.
+  if (!window.Promise) {
+    alert("Ouch, your browser does not implement Promise. This example won't work.");
+    return;
+  }
+  doPut("/var/content", document.querySelector("#content").value)
+      .catch(function (err) {
+    console.error(err.stack);
+  });
+}
+    </script>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    <p>This is <code>client/index.html</code>. Go edit it and refresh!
+    <p id="writable" style="display: none">
+        The contents of the following textarea are automatically saved to the server
+        via GET/PUT on the URL <a href="/var/content"><code>/var/content</code></a>.
+        It will be restored on change.
+    <p id="read-only" style="display: none">
+        The contents of the following textarea are loaded via GET on the URL
+        <a href="/var/content"><code>/var/content</code></a>. You do not have edit
+        permission, so you can't edit it (a PUT would return 403), but you can
+        <a href="javascript:queryContent()">click here to fetch the latest edits
+        made by others</a>.
+
+    <p><textarea id="content" style="width: 500px; height: 300px;" oninput="updateContent()"></textarea><br>
+    <script type="text/javascript">queryContent();</script>
+  </body>
+</html>
