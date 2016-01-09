@@ -80,11 +80,10 @@ impl web_session::Server for WebSession {
             // A directory. Serve "index.html".
             self.read_file(&format!("client/{}index.html", path), results, "text/html; charset=UTF-8")
         } else {
-/*
             // Request for a static file. Look for it under "client/".
-            auto filename = kj::str("client/", path);
+            let filename = format!("client/{}", path);
 
-            // Check if it's a directory.
+/*            // Check if it's a directory.
             if (isDirectory(filename)) {
                 // It is. Return redirect to add '/'.
                 auto redirect = context.getResults().initRedirect();
@@ -92,16 +91,37 @@ impl web_session::Server for WebSession {
                 redirect.setSwitchToGet(true);
                 redirect.setLocation(kj::str(path, '/'));
                 return kj::READY_NOW;
-            }
+            }*/
 
             // Regular file (or non-existent).
-            return readFile(kj::mv(filename), context, inferContentType(path));*/
-            Promise::ok(())
+            self.read_file(&filename, results, self.infer_content_type(path))
         }
     }
 }
 
 impl WebSession {
+    fn infer_content_type(&self, filename: &str) -> &'static str {
+        if filename.ends_with(".html") {
+            "text/html; charset=UTF-8"
+        } else if filename.ends_with(".js") {
+            "text/javascript; charset=UTF-8"
+        } else if filename.ends_with(".css") {
+            "text/css; charset=UTF-8"
+        } else if filename.ends_with(".png") {
+            "image/png"
+        } else if filename.ends_with(".gif") {
+            "image/gif"
+        } else if filename.ends_with(".jpg") || filename.ends_with(".jpeg") {
+            "image/jpeg"
+        } else if filename.ends_with(".svg") {
+            "image/svg+xml; charset=UTF-8"
+        } else if filename.ends_with(".txt") {
+            "text/plain; charset=UTF-8"
+        } else {
+            "application/octet-stream"
+        }
+    }
+
     fn read_file(&self,
                  filename: &str,
                  mut results: web_session::GetResults,
