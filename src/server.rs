@@ -67,14 +67,13 @@ impl web_session::Server for WebSession {
             // it would only allow the attacker to hijack another user's access to this grain, not to
             // Sandstorm in general, and if they attacker already has write access to upload the
             // malicious content, they have little to gain from hijacking another session.)
-            //return readFile(path, context, "application/octet-stream");
-            Promise::ok(())
+            self.read_file(path, results, "application/octet-stream")
         } else if path == ".can-write" {
             // Fetch "/.can-write" to determine if the user has write permission, so you can show them
             // a different UI if not.
-/*            auto response = context.getResults().initContent();
-            response.setMimeType("text/plain");
-            response.getBody().setBytes(kj::str(canWrite).asBytes());*/
+            let mut response = results.get().init_content();
+            response.set_mime_type("text/plain");
+            response.init_body().set_bytes(&format!("{}", self.can_write).as_bytes());
             Promise::ok(())
         } else if path == "" || path.ends_with("/") {
             // A directory. Serve "index.html".
@@ -83,18 +82,18 @@ impl web_session::Server for WebSession {
             // Request for a static file. Look for it under "client/".
             let filename = format!("client/{}", path);
 
-/*            // Check if it's a directory.
-            if (isDirectory(filename)) {
+            // Check if it's a directory.
+            if pry!(::std::fs::metadata(&filename)).is_dir() {
                 // It is. Return redirect to add '/'.
-                auto redirect = context.getResults().initRedirect();
-                redirect.setIsPermanent(true);
-                redirect.setSwitchToGet(true);
-                redirect.setLocation(kj::str(path, '/'));
-                return kj::READY_NOW;
-            }*/
-
-            // Regular file (or non-existent).
-            self.read_file(&filename, results, self.infer_content_type(path))
+                let mut redirect = results.get().init_redirect();
+                redirect.set_is_permanent(true);
+                redirect.set_switch_to_get(true);
+                redirect.set_location(&format!("{}/", path));
+                Promise::ok(())
+            } else {
+                // Regular file (or non-existent).
+                self.read_file(&filename, results, self.infer_content_type(path))
+            }
         }
     }
 }
