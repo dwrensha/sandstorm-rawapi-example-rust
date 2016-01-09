@@ -49,7 +49,7 @@ impl web_session::Server for WebSession {
     {
 	// HTTP GET request.
         let path = pry!(pry!(params.get()).get_path());
-        //requireCanonicalPath(path);
+        pry!(self.require_canonical_path(path));
 
         if path == "var" || path == "var/" {
             // Return a listing of the directory contents, one per line.
@@ -112,7 +112,7 @@ impl web_session::Server for WebSession {
 
         let params = pry!(params.get());
         let path = pry!(params.get_path());
-        //requireCanonicalPath(path);
+        pry!(self.require_canonical_path(path));
 
         if !path.starts_with("var/") {
             return Promise::err(Error::failed("PUT only supported under /var.".to_string()));
@@ -142,7 +142,7 @@ impl web_session::Server for WebSession {
         // HTTP DELETE request.
 
         let path = pry!(pry!(params.get()).get_path());
-        //requireCanonicalPath(path);
+        pry!(self.require_canonical_path(path));
 
         if !path.starts_with("var/") {
             return Promise::err(Error::failed("DELETE only supported under /var.".to_string()));
@@ -165,6 +165,21 @@ impl web_session::Server for WebSession {
 }
 
 impl WebSession {
+    fn require_canonical_path(&self, path: &str) -> Result<(), Error> {
+        // Require that the path doesn't contain "." or ".." or consecutive slashes, to prevent path
+        // injection attacks.
+        //
+        // Note that such attacks wouldn't actually accomplish much since everything outside /var
+        // is a read-only filesystem anyway, containing the app package contents which are non-secret.
+
+        for component in path.split("/") {
+            if component == "" || component == "." || component == ".." {
+                return Err(Error::failed(format!("non-canonical path: {}", path)));
+            }
+        }
+        Ok(())
+  }
+
     fn infer_content_type(&self, filename: &str) -> &'static str {
         if filename.ends_with(".html") {
             "text/html; charset=UTF-8"
