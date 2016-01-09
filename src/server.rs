@@ -24,7 +24,7 @@ use gj::io::unix;
 use capnp::Error;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
-use grain_capnp::{ui_view, ui_session};
+use grain_capnp::{session_context, user_info, ui_view, ui_session};
 use web_session_capnp::{web_session};
 
 pub struct WebSession {
@@ -32,10 +32,32 @@ pub struct WebSession {
 }
 
 impl WebSession {
-    pub fn new() -> WebSession {
-        WebSession {
-            can_write: true,
-        }
+    pub fn new(user_info: user_info::Reader,
+               _context: session_context::Client,
+               _params: web_session::params::Reader)
+               -> ::capnp::Result<WebSession>
+    {
+        // Permission #0 is "write". Check if bit 0 in the PermissionSet is set.
+        let permissions = try!(user_info.get_permissions());
+        let can_write = permissions.len() > 0 && permissions.get(0);
+
+        Ok(WebSession {
+            can_write: can_write,
+        })
+
+        // `UserInfo` is defined in `sandstorm/grain.capnp` and contains info like:
+        // - A stable ID for the user, so you can correlate sessions from the same user.
+        // - The user's display name, e.g. "Mark Miller", useful for identifying the user to other
+        //   users.
+        // - The user's permissions (seen above).
+
+        // `WebSession::Params` is defined in `sandstorm/web-session.capnp` and contains info like:
+        // - The hostname where the grain was mapped for this user. Every time a user opens a grain,
+        //   it is mapped at a new random hostname for security reasons.
+        // - The user's User-Agent and Accept-Languages headers.
+
+        // `SessionContext` is defined in `sandstorm/grain.capnp` and implements callbacks for
+        // sharing/access control and service publishing/discovery.
     }
 }
 
@@ -268,12 +290,22 @@ impl ui_view::Server for UiView {
 
 
     fn new_session(&mut self,
-                   _params: ui_view::NewSessionParams,
+                   params: ui_view::NewSessionParams,
                    mut results: ui_view::NewSessionResults)
                    -> Promise<(), Error>
     {
+        use ::capnp::traits::HasTypeId;
+        let params = pry!(params.get());
+
+        if params.get_session_type() != web_session::Client::type_id() {
+            return Promise::err(Error::failed("unsupported session type".to_string()));
+        }
+
+        let session = pry!(WebSession::new(pry!(params.get_user_info()),
+                                           pry!(params.get_context()),
+                                           pry!(params.get_session_params().get_as())));
         let client: web_session::Client =
-            web_session::ToClient::new(WebSession::new()).from_server::<::capnp_rpc::Server>();
+            web_session::ToClient::new(session).from_server::<::capnp_rpc::Server>();
 
         // we need to do this dance to upcast.
         results.get().set_session(ui_session::Client { client : client.client});
