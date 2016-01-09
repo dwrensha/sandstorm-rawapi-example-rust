@@ -179,7 +179,7 @@ impl ui_view::Server for UiView {
     }
 }
 
-pub fn main() -> ::capnp::Result<()> {
+pub fn main() -> Result<(), Box<::std::error::Error>> {
     EventLoop::top_level(move |wait_scope| {
         // sandstorm launches us with a connection on file descriptor 3
 	let stream = try!(unsafe { unix::Stream::from_raw_fd(3) });
@@ -192,6 +192,5 @@ pub fn main() -> ::capnp::Result<()> {
 
 	let _rpc_system = RpcSystem::new(Box::new(network), Some(client.client));
         Promise::never_done().wait(wait_scope)
-    }).expect("top level error");
-    Ok(())
+    })
 }

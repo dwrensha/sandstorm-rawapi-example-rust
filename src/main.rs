@@ -39,5 +39,5 @@ pub mod web_session_capnp {
 pub mod server;
 
 fn main() {
-
+    server::main().expect("top level error");
 }
