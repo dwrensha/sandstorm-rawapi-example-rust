@@ -85,8 +85,7 @@ impl web_session::Server for WebSession {
             Promise::ok(())
         } else if path == "" || path.ends_with("/") {
             // A directory. Serve "index.html".
-//            return readFile(kj::str("client/", path, "index.html"), context, "text/html; charset=UTF-8");
-            Promise::ok(())
+            self.read_file(&format!("client/{}index.html", path), results, "text/html; charset=UTF-8")
         } else {
 /*
             // Request for a static file. Look for it under "client/".
@@ -109,9 +108,38 @@ impl web_session::Server for WebSession {
     }
 }
 
+impl WebSession {
+    fn read_file(&self,
+                 filename: &str,
+                 mut results: web_session::GetResults,
+                 content_type: &str)
+                 -> Promise<(), Error>
+    {
+        match ::std::fs::File::open(filename) {
+            Ok(mut f) => {
+                let size = pry!(f.metadata()).len();
+                let mut content = results.get().init_content();
+                content.set_status_code(web_session::response::SuccessCode::Ok);
+                content.set_mime_type(content_type);
+                let mut body = content.init_body().init_bytes(size as u32);
+                pry!(::std::io::copy(&mut f, &mut body));
+                Promise::ok(())
+            }
+            Err(ref e) if e.kind() == ::std::io::ErrorKind::NotFound => {
+                let mut error = results.get().init_client_error();
+                error.set_status_code(web_session::response::ClientErrorCode::NotFound);
+                Promise::ok(())
+            }
+            Err(e) => {
+                Promise::err(e.into())
+            }
+        }
+    }
+}
+
 pub fn main() -> ::capnp::Result<()> {
     EventLoop::top_level(move |wait_scope| {
-        // sandstorm launches us with a connection file descriptor 3
+        // sandstorm launches us with a connection on file descriptor 3
 	let stream = try!(unsafe { unix::Stream::from_raw_fd(3) });
         let (reader, writer) = stream.split();
 
