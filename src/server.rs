@@ -89,7 +89,7 @@ impl web_session::Server for WebSession {
             let filename = format!("client/{}", path);
 
             // Check if it's a directory.
-            if pry!(::std::fs::metadata(&filename)).is_dir() {
+            if let Ok(true) = ::std::fs::metadata(&filename).map(|md| md.is_dir()) {
                 // It is. Return redirect to add '/'.
                 let mut redirect = results.get().init_redirect();
                 redirect.set_is_permanent(true);
