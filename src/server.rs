@@ -47,7 +47,7 @@ impl web_session::Server for WebSession {
            mut results: web_session::GetResults)
 	-> Promise<(), Error>
     {
-	// HTTP GET request.
+        // HTTP GET request.
         let path = pry!(pry!(params.get()).get_path());
         pry!(self.require_canonical_path(path));
 
@@ -236,32 +236,34 @@ pub struct UiView;
 impl ui_view::Server for UiView {
     fn get_view_info(&mut self,
                      _params: ui_view::GetViewInfoParams,
-                     _results: ui_view::GetViewInfoResults)
+                     mut results: ui_view::GetViewInfoResults)
                      -> Promise<(), Error>
     {
+        let mut view_info = results.get();
+
+        // Define a "write" permission, and then define roles "editor" and "viewer" where only "editor"
+        // has the "write" permission. This will allow people to share read-only.
+        {
+            let perms = view_info.borrow().init_permissions(1);
+            let mut write = perms.get(0);
+            write.set_name("write");
+            write.init_title().set_default_text("write");
+        }
+
+        let mut roles = view_info.init_roles(2);
+        {
+            let mut editor = roles.borrow().get(0);
+            editor.borrow().init_title().set_default_text("editor");
+            editor.borrow().init_verb_phrase().set_default_text("can edit");
+            editor.init_permissions(1).set(0, true);   // has "write" permission
+        }
+        {
+            let mut viewer = roles.get(1);
+            viewer.borrow().init_title().set_default_text("viewer");
+            viewer.borrow().init_verb_phrase().set_default_text("can view");
+            viewer.init_permissions(1).set(0, false);  // does not have "write" permission
+        }
         Promise::ok(())
-/*
-    auto viewInfo = context.initResults();
-
-    // Define a "write" permission, and then define roles "editor" and "viewer" where only "editor"
-    // has the "write" permission. This will allow people to share read-only.
-    auto perms = viewInfo.initPermissions(1);
-    auto write = perms[0];
-    write.setName("write");
-    write.initTitle().setDefaultText("write");
-
-    auto roles = viewInfo.initRoles(2);
-    auto editor = roles[0];
-    editor.initTitle().setDefaultText("editor");
-    editor.initVerbPhrase().setDefaultText("can edit");
-    editor.initPermissions(1).set(0, true);   // has "write" permission
-    auto viewer = roles[1];
-    viewer.initTitle().setDefaultText("viewer");
-    viewer.initVerbPhrase().setDefaultText("can view");
-    viewer.initPermissions(1).set(0, false);  // does not have "write" permission
-
-    return kj::READY_NOW;
-         */
     }
 
 
