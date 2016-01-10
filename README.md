@@ -8,7 +8,7 @@ was written in C++.
 # Running
 
 Install [Rust](https://www.rust-lang.org/), [Cap'n Proto](https://capnproto.org/install.html),
-and [Sandstorm](htps://sandstorm.io/install). Then do:
+and [Sandstorm](https://sandstorm.io/install). Then do:
 
 ```
 $ cargo build --release
