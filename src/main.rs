@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#[macro_use]
-extern crate gj;
+#[macro_use] extern crate gj;
+extern crate gjio;
 extern crate capnp;
 extern crate capnp_rpc;
 
