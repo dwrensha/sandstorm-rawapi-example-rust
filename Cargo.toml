@@ -11,7 +11,7 @@ name = "server"
 path = "src/main.rs"
 
 [build-dependencies]
-capnpc = "0.6"
+capnpc = "0.7"
 
 [dependencies]
 gj = "0.2"
