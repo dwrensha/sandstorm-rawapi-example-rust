@@ -23,8 +23,8 @@ use gj::{Promise, EventLoop};
 use capnp::Error;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
-use grain_capnp::{session_context, user_info, ui_view, ui_session};
-use web_session_capnp::{web_session};
+use sandstorm::grain_capnp::{session_context, user_info, ui_view, ui_session};
+use sandstorm::web_session_capnp::{web_session};
 
 pub struct WebSession {
     can_write: bool,
