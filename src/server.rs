@@ -148,9 +148,11 @@ impl web_session::Server for WebSession {
             let temp_path = format!("{}.uploading", path);
             let data = pry!(pry!(params.get_content()).get_content());
 
-            pry!(pry!(::std::fs::File::create(&temp_path)).write_all(data));
-
+            let mut writer = pry!(::std::fs::File::create(&temp_path));
+            pry!(writer.write_all(data));
             pry!(::std::fs::rename(temp_path, path));
+            pry!(writer.sync_all());
+
             results.get().init_no_content();
         }
         Promise::ok(())
