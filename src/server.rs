@@ -23,7 +23,8 @@ use gj::{Promise, EventLoop};
 use capnp::Error;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
-use sandstorm::grain_capnp::{session_context, user_info, ui_view, ui_session};
+use sandstorm::grain_capnp::{session_context, ui_view, ui_session};
+use sandstorm::identity_capnp::{user_info};
 use sandstorm::web_session_capnp::{web_session};
 
 pub struct WebSession {
