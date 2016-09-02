@@ -129,14 +129,8 @@ const pkgdef :Spk.PackageDefinition = (
 );
 
 const myCommand :Spk.Manifest.Command = (
-  # Here we define the command used to start up your server.
   argv = ["./target/release/server"],
   environ = [
-    # Note that this defines the *entire* environment seen by your app.
     (key = "PATH", value = "/usr/local/bin:/usr/bin:/bin"),
-    (key = "SANDSTORM", value = "1"),
-    # Export SANDSTORM=1 into the environment, so that apps running within Sandstorm
-    # can detect if $SANDSTORM="1" at runtime, switching UI and/or backend to use
-    # the app's Sandstorm-specific integration code.
   ]
 );
