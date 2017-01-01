@@ -29,7 +29,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "capnp"
 version = "0.7.5"
-source = "git+https://github.com/dwrensha/capnproto-rust?branch=futures#5c37d9622976775f839bb9fe5261c6bd4b7a9770"
+source = "git+https://github.com/dwrensha/capnproto-rust?branch=futures#aef9f0fa881ab73d86dff17fce5ca6ed0ce40e01"
 dependencies = [
  "byteorder 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -60,7 +60,7 @@ replace = "capnp-futures 0.0.2 (git+https://github.com/dwrensha/capnp-futures-rs
 [[package]]
 name = "capnp-rpc"
 version = "0.7.4"
-source = "git+https://github.com/dwrensha/capnp-rpc-rust?branch=futures#61a8b31d132d6aa2951391c932f7cd0741a30bb9"
+source = "git+https://github.com/dwrensha/capnp-rpc-rust?branch=futures#49a746dd8881cfbcba65f1bf071854a837d7fb94"
 dependencies = [
  "capnp 0.7.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnp-futures 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",

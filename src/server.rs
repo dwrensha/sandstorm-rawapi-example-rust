@@ -325,9 +325,14 @@ impl ui_view::Server for UiView {
 
 pub fn main() -> Result<(), Box<::std::error::Error>> {
     use tokio_core::io::Io;
+    use ::std::os::unix::io::{FromRawFd, IntoRawFd};
+
     let mut core = try!(::tokio_core::reactor::Core::new());
     let handle = core.handle();
-    let stream : ::mio_uds::UnixStream = unsafe { ::std::os::unix::io::FromRawFd::from_raw_fd(3) };
+
+    let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
+    try!(stream.set_nonblocking(true));
+    let stream: ::mio_uds::UnixStream = unsafe { FromRawFd::from_raw_fd(stream.into_raw_fd()) };
     let stream = try!(::tokio_core::reactor::PollEvented::new(stream, &handle));
 
     let (read_half, write_half) = stream.split();
