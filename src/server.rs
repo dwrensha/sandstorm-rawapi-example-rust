@@ -338,7 +338,7 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
     let (read_half, write_half) = stream.split();
 
     let network =
-        Box::new(twoparty::VatNetwork::new(read_half, write_half, &handle,
+        Box::new(twoparty::VatNetwork::new(read_half, write_half,
                                            rpc_twoparty_capnp::Side::Client,
                                            Default::default()));
 
@@ -349,12 +349,11 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
     let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
         .from_server::<::capnp_rpc::Server>();
 
-    let mut rpc_system = RpcSystem::new(network, Some(client.client), handle);
+    let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
     tx.complete(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
                 ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client);
 
-    core.run(::futures::future::empty::<(),()>()).unwrap();
+    try!(core.run(rpc_system));
     Ok(())
-
 }
