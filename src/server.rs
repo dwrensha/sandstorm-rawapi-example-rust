@@ -23,6 +23,8 @@ use capnp::Error;
 use capnp::capability::Promise;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
+use futures::Future;
+
 use sandstorm::grain_capnp::{session_context, ui_view, ui_session, sandstorm_api};
 use sandstorm::identity_capnp::{user_info};
 use sandstorm::web_session_capnp::{web_session};
@@ -343,8 +345,9 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
                                            Default::default()));
 
 
-    let (tx, sandstorm_api): (_, sandstorm_api::Client<::capnp::any_pointer::Owned>) =
-            ::capnp_rpc::new_promise_client();
+    let (tx, rx) = ::futures::sync::oneshot::channel();
+    let sandstorm_api: sandstorm_api::Client<::capnp::any_pointer::Owned> =
+            ::capnp_rpc::new_promise_client(rx.map_err(|e| e.into()));
 
     let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
         .from_server::<::capnp_rpc::Server>();
