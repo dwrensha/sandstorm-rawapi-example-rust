@@ -326,7 +326,7 @@ impl ui_view::Server for UiView {
 }
 
 pub fn main() -> Result<(), Box<::std::error::Error>> {
-    use tokio_core::io::Io;
+    use tokio_io::AsyncRead;
     use ::std::os::unix::io::{FromRawFd, IntoRawFd};
 
     let mut core = try!(::tokio_core::reactor::Core::new());
@@ -354,8 +354,8 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
 
     let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
-    tx.complete(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
-                ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client);
+    drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
+        ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client));
 
     try!(core.run(rpc_system));
     Ok(())
