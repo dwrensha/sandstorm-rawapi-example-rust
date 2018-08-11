@@ -278,7 +278,7 @@ impl ui_view::Server for UiView {
         // Define a "write" permission, and then define roles "editor" and "viewer" where only "editor"
         // has the "write" permission. This will allow people to share read-only.
         {
-            let perms = view_info.borrow().init_permissions(1);
+            let perms = view_info.reborrow().init_permissions(1);
             let mut write = perms.get(0);
             write.set_name("write");
             write.init_title().set_default_text("write");
@@ -286,15 +286,15 @@ impl ui_view::Server for UiView {
 
         let mut roles = view_info.init_roles(2);
         {
-            let mut editor = roles.borrow().get(0);
-            editor.borrow().init_title().set_default_text("editor");
-            editor.borrow().init_verb_phrase().set_default_text("can edit");
+            let mut editor = roles.reborrow().get(0);
+            editor.reborrow().init_title().set_default_text("editor");
+            editor.reborrow().init_verb_phrase().set_default_text("can edit");
             editor.init_permissions(1).set(0, true);   // has "write" permission
         }
         {
             let mut viewer = roles.get(1);
-            viewer.borrow().init_title().set_default_text("viewer");
-            viewer.borrow().init_verb_phrase().set_default_text("can view");
+            viewer.reborrow().init_title().set_default_text("viewer");
+            viewer.reborrow().init_verb_phrase().set_default_text("can view");
             viewer.init_permissions(1).set(0, false);  // does not have "write" permission
         }
         Promise::ok(())
