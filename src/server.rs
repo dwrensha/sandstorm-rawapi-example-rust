@@ -317,7 +317,7 @@ impl ui_view::Server for UiView {
                                            pry!(params.get_context()),
                                            pry!(params.get_session_params().get_as())));
         let client: web_session::Client =
-            web_session::ToClient::new(session).from_server::<::capnp_rpc::Server>();
+            web_session::ToClient::new(session).into_client::<::capnp_rpc::Server>();
 
         // we need to do this dance to upcast.
         results.get().set_session(ui_session::Client { client : client.client});
@@ -350,7 +350,7 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
             ::capnp_rpc::new_promise_client(rx.map_err(|e| e.into()));
 
     let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
-        .from_server::<::capnp_rpc::Server>();
+        .into_client::<::capnp_rpc::Server>();
 
     let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
