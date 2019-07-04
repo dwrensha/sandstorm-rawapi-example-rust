@@ -10,10 +10,10 @@ name = "server"
 path = "src/main.rs"
 
 [dependencies]
-capnp = "0.9"
-capnp-rpc = "0.9"
+capnp = "0.10"
+capnp-rpc = "0.10"
 futures = "0.1"
 mio-uds = "0.6"
-sandstorm = "0.0.7"
+sandstorm = "0.0.9"
 tokio-io = "0.1"
 tokio-core = "0.1"
