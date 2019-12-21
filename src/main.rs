@@ -19,13 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-extern crate futures;
-extern crate tokio_core;
-extern crate tokio_io;
-extern crate capnp;
 #[macro_use] extern crate capnp_rpc;
-extern crate mio_uds;
-extern crate sandstorm;
 
 pub mod server;
 
