@@ -40,7 +40,7 @@ impl WebSession {
                -> ::capnp::Result<WebSession>
     {
         // Permission #0 is "write". Check if bit 0 in the PermissionSet is set.
-        let permissions = try!(user_info.get_permissions());
+        let permissions = user_info.get_permissions()?;
         let can_write = permissions.len() > 0 && permissions.get(0);
 
         Ok(WebSession {
@@ -325,17 +325,17 @@ impl ui_view::Server for UiView {
     }
 }
 
-pub fn main() -> Result<(), Box<::std::error::Error>> {
+pub fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
     use tokio_io::AsyncRead;
     use ::std::os::unix::io::{FromRawFd, IntoRawFd};
 
-    let mut core = try!(::tokio_core::reactor::Core::new());
+    let mut core = ::tokio_core::reactor::Core::new()?;
     let handle = core.handle();
 
     let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
-    try!(stream.set_nonblocking(true));
+    stream.set_nonblocking(true)?;
     let stream: ::mio_uds::UnixStream = unsafe { FromRawFd::from_raw_fd(stream.into_raw_fd()) };
-    let stream = try!(::tokio_core::reactor::PollEvented::new(stream, &handle));
+    let stream = ::tokio_core::reactor::PollEvented::new(stream, &handle)?;
 
     let (read_half, write_half) = stream.split();
 
@@ -357,6 +357,6 @@ pub fn main() -> Result<(), Box<::std::error::Error>> {
     drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
         ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client));
 
-    try!(core.run(rpc_system));
+    core.run(rpc_system)?;
     Ok(())
 }
