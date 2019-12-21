@@ -331,28 +331,30 @@ pub fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
     let mut rt = tokio::runtime::Runtime::new().unwrap();
     let local = tokio::task::LocalSet::new();
 
-    let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
-    let stream = tokio::net::UnixStream::from_std(stream)?;
-    let (read_half, write_half) = futures_tokio_compat::Compat::new(stream).split();
+    local.block_on(&mut rt, async {
+        let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
+        let stream = tokio::net::UnixStream::from_std(stream)?;
+        let (read_half, write_half) = futures_tokio_compat::Compat::new(stream).split();
 
-    let network =
-        Box::new(twoparty::VatNetwork::new(read_half, write_half,
-                                           rpc_twoparty_capnp::Side::Client,
-                                           Default::default()));
+        let network =
+            Box::new(twoparty::VatNetwork::new(read_half, write_half,
+                                               rpc_twoparty_capnp::Side::Client,
+                                               Default::default()));
 
-
-    let (tx, rx) = ::futures::channel::oneshot::channel();
-    let sandstorm_api: sandstorm_api::Client<::capnp::any_pointer::Owned> =
+        let (tx, rx) = ::futures::channel::oneshot::channel();
+        let sandstorm_api: sandstorm_api::Client<::capnp::any_pointer::Owned> =
             ::capnp_rpc::new_promise_client(rx.map_err(|_e| capnp::Error::failed(format!("oneshot was canceled"))));
 
-    let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
-        .into_client::<::capnp_rpc::Server>();
+        let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
+            .into_client::<::capnp_rpc::Server>();
 
-    let mut rpc_system = RpcSystem::new(network, Some(client.client));
+        let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
-    drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
-        ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client));
+        drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
+            ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client));
 
-    local.block_on(&mut rt, rpc_system)?;
+        Ok::<_, Box<dyn (std::error::Error)>>(rpc_system.await?)
+    })?;
+
     Ok(())
 }
