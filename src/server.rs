@@ -334,7 +334,8 @@ pub fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
     local.block_on(&mut rt, async {
         let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
         let stream = tokio::net::UnixStream::from_std(stream)?;
-        let (read_half, write_half) = futures_tokio_compat::Compat::new(stream).split();
+        let (read_half, write_half) =
+            tokio_util::compat::Tokio02AsyncReadCompatExt::compat(stream).split();
 
         let network =
             Box::new(twoparty::VatNetwork::new(read_half, write_half,
