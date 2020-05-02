@@ -11,8 +11,8 @@ name = "server"
 path = "src/main.rs"
 
 [dependencies]
-capnp = "0.12"
-capnp-rpc = "0.12"
+capnp = "0.12.2"
+capnp-rpc = "0.12.2"
 futures = "0.3"
 mio-uds = "0.6"
 sandstorm = "0.0.13"

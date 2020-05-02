@@ -316,8 +316,7 @@ impl ui_view::Server for UiView {
         let session = pry!(WebSession::new(pry!(params.get_user_info()),
                                            pry!(params.get_context()),
                                            pry!(params.get_session_params().get_as())));
-        let client: web_session::Client =
-            web_session::ToClient::new(session).into_client::<::capnp_rpc::Server>();
+        let client: web_session::Client = capnp_rpc::new_client(session);
 
         // we need to do this dance to upcast.
         results.get().set_session(ui_session::Client { client : client.client});
@@ -346,9 +345,7 @@ pub fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
         let sandstorm_api: sandstorm_api::Client<::capnp::any_pointer::Owned> =
             ::capnp_rpc::new_promise_client(rx.map_err(|_e| capnp::Error::failed(format!("oneshot was canceled"))));
 
-        let client = ui_view::ToClient::new(UiView::new(sandstorm_api))
-            .into_client::<::capnp_rpc::Server>();
-
+        let client: ui_view::Client = capnp_rpc::new_client(UiView::new(sandstorm_api));
         let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
         drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
