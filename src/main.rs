@@ -23,6 +23,8 @@
 
 pub mod server;
 
-fn main() {
-    server::main().expect("top level error");
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    server::main().await?;
+    Ok(())
 }

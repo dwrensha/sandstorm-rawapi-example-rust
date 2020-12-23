@@ -16,5 +16,5 @@ capnp-rpc = "0.14"
 futures = "0.3"
 mio-uds = "0.6"
 sandstorm = "0.0.15"
-tokio = { version = "0.2.6", features = ["net", "rt-util", "uds"]}
-tokio-util = { version = "0.3.0", features = ["compat"] }
+tokio = { version = "1.0.0", features = ["macros", "net", "rt"]}
+tokio-util = { version = "0.6.0", features = ["compat"] }
