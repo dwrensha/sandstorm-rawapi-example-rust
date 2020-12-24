@@ -328,6 +328,7 @@ pub async fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
     use ::std::os::unix::io::{FromRawFd};
 
     let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };
+    stream.set_nonblocking(true)?;
     let stream = tokio::net::UnixStream::from_std(stream)?;
     let (read_half, write_half) =
         tokio_util::compat::TokioAsyncReadCompatExt::compat(stream).split();
