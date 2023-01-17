@@ -309,7 +309,7 @@ impl ui_view::Server for UiView {
         use ::capnp::traits::HasTypeId;
         let params = pry!(params.get());
 
-        if params.get_session_type() != web_session::Client::type_id() {
+        if params.get_session_type() != web_session::Client::TYPE_ID {
             return Promise::err(Error::failed("unsupported session type".to_string()));
         }
 
