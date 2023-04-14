@@ -3,7 +3,7 @@
 name = "sandstorm-raw-api-example"
 version = "0.0.1"
 authors = [ "David Renshaw <dwrenshaw@gmail.com>" ]
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 
