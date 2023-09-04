@@ -72,7 +72,7 @@ impl web_session::Server for WebSession {
 	-> Promise<(), Error>
     {
         // HTTP GET request.
-        let path = pry!(pry!(params.get()).get_path());
+        let path = pry!(pry!(pry!(params.get()).get_path()).to_str());
         pry!(self.require_canonical_path(path));
 
         if path == "var" || path == "var/" {
@@ -87,7 +87,7 @@ impl web_session::Server for WebSession {
             }
             let text = entries.join("\n");
             let mut response = results.get().init_content();
-            response.set_mime_type("text/plain");
+            response.set_mime_type("text/plain".into());
             response.init_body().set_bytes(text.as_bytes());
             Promise::ok(())
         } else if path.starts_with("var/") {
@@ -102,7 +102,7 @@ impl web_session::Server for WebSession {
             // Fetch "/.can-write" to determine if the user has write permission, so you can show them
             // a different UI if not.
             let mut response = results.get().init_content();
-            response.set_mime_type("text/plain");
+            response.set_mime_type("text/plain".into());
             response.init_body().set_bytes(&format!("{}", self.can_write).as_bytes());
             Promise::ok(())
         } else if path == "" || path.ends_with("/") {
@@ -118,7 +118,7 @@ impl web_session::Server for WebSession {
                 let mut redirect = results.get().init_redirect();
                 redirect.set_is_permanent(true);
                 redirect.set_switch_to_get(true);
-                redirect.set_location(&format!("{}/", path));
+                redirect.set_location(format!("{}/", path)[..].into());
                 Promise::ok(())
             } else {
                 // Regular file (or non-existent).
@@ -135,7 +135,7 @@ impl web_session::Server for WebSession {
         // HTTP PUT request.
 
         let params = pry!(params.get());
-        let path = pry!(params.get_path());
+        let path = pry!(pry!(params.get_path()).to_str());
         pry!(self.require_canonical_path(path));
 
         if !path.starts_with("var/") {
@@ -167,7 +167,7 @@ impl web_session::Server for WebSession {
     {
         // HTTP DELETE request.
 
-        let path = pry!(pry!(params.get()).get_path());
+        let path = pry!(pry!(pry!(params.get()).get_path()).to_str());
         pry!(self.require_canonical_path(path));
 
         if !path.starts_with("var/") {
@@ -239,7 +239,7 @@ impl WebSession {
                 let size = pry!(f.metadata()).len();
                 let mut content = results.get().init_content();
                 content.set_status_code(web_session::response::SuccessCode::Ok);
-                content.set_mime_type(content_type);
+                content.set_mime_type(content_type.into());
                 let mut body = content.init_body().init_bytes(size as u32);
                 pry!(::std::io::copy(&mut f, &mut body));
                 Promise::ok(())
@@ -280,21 +280,21 @@ impl ui_view::Server for UiView {
         {
             let perms = view_info.reborrow().init_permissions(1);
             let mut write = perms.get(0);
-            write.set_name("write");
-            write.init_title().set_default_text("write");
+            write.set_name("write".into());
+            write.init_title().set_default_text("write".into());
         }
 
         let mut roles = view_info.init_roles(2);
         {
             let mut editor = roles.reborrow().get(0);
-            editor.reborrow().init_title().set_default_text("editor");
-            editor.reborrow().init_verb_phrase().set_default_text("can edit");
+            editor.reborrow().init_title().set_default_text("editor".into());
+            editor.reborrow().init_verb_phrase().set_default_text("can edit".into());
             editor.init_permissions(1).set(0, true);   // has "write" permission
         }
         {
             let mut viewer = roles.get(1);
-            viewer.reborrow().init_title().set_default_text("viewer");
-            viewer.reborrow().init_verb_phrase().set_default_text("can view");
+            viewer.reborrow().init_title().set_default_text("viewer".into());
+            viewer.reborrow().init_verb_phrase().set_default_text("can view".into());
             viewer.init_permissions(1).set(0, false);  // does not have "write" permission
         }
         Promise::ok(())

@@ -16,15 +16,18 @@ checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 
 [[package]]
 name = "capnp"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13e2d432d1601d61d1e11140d04e9d239b5cf7316fa1106523c3d86eea19c29d"
+checksum = "a04bb924792fc85a5eddb48d40febd41c2b55b7f2927e14fbab340cce8c44b4e"
+dependencies = [
+ "embedded-io",
+]
 
 [[package]]
 name = "capnp-futures"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71d520e0af228b92de357f230f4987ee4f9786f2b8aa24b9cfe53f5b11c17198"
+checksum = "d131190ee8454d1c3ccdd81b454805c7fa7d350fc3a343e7c5be285bf411a8af"
 dependencies = [
  "capnp",
  "futures",
@@ -32,9 +35,9 @@ dependencies = [
 
 [[package]]
 name = "capnp-rpc"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ab8e869783e491cbcc350427a5e775aa4d8a1deaa5198d74332957cfa430779"
+checksum = "94b87a9e0f74600628e227d39b79ef8652c558a408999ac46ba22b19dbad0010"
 dependencies = [
  "capnp",
  "capnp-futures",
@@ -43,9 +46,9 @@ dependencies = [
 
 [[package]]
 name = "capnpc"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d96f2815c224ac779eeef76a292264d5361600f0f3ab97ab189342c7042308cc"
+checksum = "5067f3c8ee94d993d03150153e9a57a6ff330127b1c1ad76475051e1cef79c2d"
 dependencies = [
  "capnp",
 ]
@@ -55,6 +58,12 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "embedded-io"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "658bbadc628dc286b9ae02f0cb0f5411c056eb7487b72f0083203f115de94060"
 
 [[package]]
 name = "futures"
@@ -210,9 +219,9 @@ dependencies = [
 
 [[package]]
 name = "sandstorm"
-version = "0.0.18"
+version = "0.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e63720c62b026992546b33eb8a1dee5bc311b8b5375d7e2338eebe79c2ebed5c"
+checksum = "63d8e45597738e7864a1c052fdf37c83aa1f708f4d4f9f71518d1a1013ede47b"
 dependencies = [
  "capnp",
  "capnpc",
