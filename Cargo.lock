@@ -219,9 +219,9 @@ dependencies = [
 
 [[package]]
 name = "sandstorm"
-version = "0.0.19"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63d8e45597738e7864a1c052fdf37c83aa1f708f4d4f9f71518d1a1013ede47b"
+checksum = "b150ad1f95041e586e175213b839999f6f5586212f3cd1025352049e528e728e"
 dependencies = [
  "capnp",
  "capnpc",

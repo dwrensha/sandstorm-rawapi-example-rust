@@ -14,6 +14,6 @@ path = "src/main.rs"
 capnp = "0.18"
 capnp-rpc = "0.18"
 futures = "0.3"
-sandstorm = "0.0.19"
+sandstorm = "0.18.0"
 tokio = { version = "1.0.0", features = ["macros", "net", "rt"]}
 tokio-util = { version = "0.7.0", features = ["compat"] }
