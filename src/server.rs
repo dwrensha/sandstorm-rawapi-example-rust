@@ -118,7 +118,7 @@ impl web_session::Server for WebSession {
                 let mut redirect = results.get().init_redirect();
                 redirect.set_is_permanent(true);
                 redirect.set_switch_to_get(true);
-                redirect.set_location(&format!("{}/", path));
+                redirect.set_location(format!("{}/", path));
                 Promise::ok(())
             } else {
                 // Regular file (or non-existent).
