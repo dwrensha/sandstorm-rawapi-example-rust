@@ -340,13 +340,13 @@ pub async fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
 
     let (tx, rx) = ::futures::channel::oneshot::channel();
     let sandstorm_api: sandstorm_api::Client<::capnp::any_pointer::Owned> =
-        ::capnp_rpc::new_promise_client(rx.map_err(|_e| capnp::Error::failed(format!("oneshot was canceled"))));
+        ::capnp_rpc::new_future_client(rx.map_err(|_e| capnp::Error::failed(format!("oneshot was canceled"))));
 
     let client: ui_view::Client = capnp_rpc::new_client(UiView::new(sandstorm_api));
     let mut rpc_system = RpcSystem::new(network, Some(client.client));
 
     drop(tx.send(rpc_system.bootstrap::<sandstorm_api::Client<::capnp::any_pointer::Owned>>(
-        ::capnp_rpc::rpc_twoparty_capnp::Side::Server).client));
+        ::capnp_rpc::rpc_twoparty_capnp::Side::Server)));
 
     rpc_system.await?;
     Ok(())
