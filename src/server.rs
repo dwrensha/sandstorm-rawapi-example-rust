@@ -20,7 +20,6 @@
 // THE SOFTWARE.
 
 use capnp::Error;
-use capnp::capability::Promise;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
 use futures::{AsyncReadExt, TryFutureExt};
@@ -66,20 +65,20 @@ impl WebSession {
 impl ui_session::Server for WebSession {}
 
 impl web_session::Server for WebSession {
-    fn get(&mut self,
+    async fn get(&self,
            params: web_session::GetParams,
            mut results: web_session::GetResults)
-	-> Promise<(), Error>
+	-> Result<(), Error>
     {
         // HTTP GET request.
-        let path = pry!(pry!(pry!(params.get()).get_path()).to_str());
-        pry!(self.require_canonical_path(path));
+        let path = params.get()?.get_path()?.to_str()?;
+        self.require_canonical_path(path)?;
 
         if path == "var" || path == "var/" {
             // Return a listing of the directory contents, one per line.
             let mut entries = Vec::new();
-            for entry in pry!(::std::fs::read_dir(path)) {
-                let entry = pry!(entry);
+            for entry in ::std::fs::read_dir(path)? {
+                let entry = entry?;
                 let name = entry.file_name().into_string().expect("bad file name");
                 if (&name != ".") && (&name != "..") {
                     entries.push(name);
@@ -89,7 +88,7 @@ impl web_session::Server for WebSession {
             let mut response = results.get().init_content();
             response.set_mime_type("text/plain");
             response.init_body().set_bytes(text.as_bytes());
-            Promise::ok(())
+            Ok(())
         } else if path.starts_with("var/") {
             // Serve all files under /var with type application/octet-stream since it comes from the
             // user. E.g. serving as "text/html" here would allow someone to trivially XSS other users
@@ -104,7 +103,7 @@ impl web_session::Server for WebSession {
             let mut response = results.get().init_content();
             response.set_mime_type("text/plain");
             response.init_body().set_bytes(&format!("{}", self.can_write).as_bytes());
-            Promise::ok(())
+            Ok(())
         } else if path == "" || path.ends_with("/") {
             // A directory. Serve "index.html".
             self.read_file(&format!("client/{}index.html", path), results, "text/html; charset=UTF-8")
@@ -119,7 +118,7 @@ impl web_session::Server for WebSession {
                 redirect.set_is_permanent(true);
                 redirect.set_switch_to_get(true);
                 redirect.set_location(format!("{}/", path));
-                Promise::ok(())
+                Ok(())
             } else {
                 // Regular file (or non-existent).
                 self.read_file(&filename, results, self.infer_content_type(path))
@@ -127,19 +126,19 @@ impl web_session::Server for WebSession {
         }
     }
 
-    fn put(&mut self,
+    async fn put(&self,
            params: web_session::PutParams,
            mut results: web_session::PutResults)
-	-> Promise<(), Error>
+	-> Result<(), Error>
     {
         // HTTP PUT request.
 
-        let params = pry!(params.get());
-        let path = pry!(pry!(params.get_path()).to_str());
-        pry!(self.require_canonical_path(path));
+        let params = params.get()?;
+        let path = params.get_path()?.to_str()?;
+        self.require_canonical_path(path)?;
 
         if !path.starts_with("var/") {
-            return Promise::err(Error::failed("PUT only supported under /var.".to_string()));
+            return Err(Error::failed("PUT only supported under /var.".to_string()));
         }
 
         if !self.can_write {
@@ -148,44 +147,44 @@ impl web_session::Server for WebSession {
         } else {
             use std::io::Write;
             let temp_path = format!("{}.uploading", path);
-            let data = pry!(pry!(params.get_content()).get_content());
+            let data = params.get_content()?.get_content()?;
 
-            let mut writer = pry!(::std::fs::File::create(&temp_path));
-            pry!(writer.write_all(data));
-            pry!(::std::fs::rename(temp_path, path));
-            pry!(writer.sync_all());
+            let mut writer = ::std::fs::File::create(&temp_path)?;
+            writer.write_all(data)?;
+            ::std::fs::rename(temp_path, path)?;
+            writer.sync_all()?;
 
             results.get().init_no_content();
         }
-        Promise::ok(())
+        Ok(())
     }
 
-    fn delete(&mut self,
-              params: web_session::DeleteParams,
-              mut results: web_session::DeleteResults)
-	-> Promise<(), Error>
+    async fn delete(&self,
+                    params: web_session::DeleteParams,
+                    mut results: web_session::DeleteResults)
+	-> Result<(), Error>
     {
         // HTTP DELETE request.
 
-        let path = pry!(pry!(pry!(params.get()).get_path()).to_str());
-        pry!(self.require_canonical_path(path));
+        let path = params.get()?.get_path()?.to_str()?;
+        self.require_canonical_path(path)?;
 
         if !path.starts_with("var/") {
-            return Promise::err(Error::failed("DELETE only supported under /var.".to_string()));
+            return Err(Error::failed("DELETE only supported under /var.".to_string()));
         }
 
         if !self.can_write {
             results.get().init_client_error()
                 .set_status_code(web_session::response::ClientErrorCode::Forbidden);
-            Promise::ok(())
+            Ok(())
         } else {
             if let Err(e) = ::std::fs::remove_file(path) {
                 if e.kind() != ::std::io::ErrorKind::NotFound {
-                    return Promise::err(e.into())
+                    return Err(e.into())
                 }
             }
             results.get().init_no_content();
-            Promise::ok(())
+            Ok(())
         }
     }
 }
@@ -232,25 +231,25 @@ impl WebSession {
                  filename: &str,
                  mut results: web_session::GetResults,
                  content_type: &str)
-                 -> Promise<(), Error>
+                 -> Result<(), Error>
     {
         match ::std::fs::File::open(filename) {
             Ok(mut f) => {
-                let size = pry!(f.metadata()).len();
+                let size = f.metadata()?.len();
                 let mut content = results.get().init_content();
                 content.set_status_code(web_session::response::SuccessCode::Ok);
                 content.set_mime_type(content_type);
                 let mut body = content.init_body().init_bytes(size as u32);
-                pry!(::std::io::copy(&mut f, &mut body));
-                Promise::ok(())
+                ::std::io::copy(&mut f, &mut body)?;
+                Ok(())
             }
             Err(ref e) if e.kind() == ::std::io::ErrorKind::NotFound => {
                 let mut error = results.get().init_client_error();
                 error.set_status_code(web_session::response::ClientErrorCode::NotFound);
-                Promise::ok(())
+                Ok(())
             }
             Err(e) => {
-                Promise::err(e.into())
+                Err(e.into())
             }
         }
     }
@@ -267,11 +266,11 @@ impl UiView {
 }
 
 impl ui_view::Server for UiView {
-    fn get_view_info(
-        &mut self,
+    async fn get_view_info(
+        &self,
         _params: ui_view::GetViewInfoParams,
         mut results: ui_view::GetViewInfoResults)
-        -> Promise<(), Error>
+        -> Result<(), Error>
     {
         let mut view_info = results.get();
 
@@ -297,34 +296,34 @@ impl ui_view::Server for UiView {
             viewer.reborrow().init_verb_phrase().set_default_text("can view");
             viewer.init_permissions(1).set(0, false);  // does not have "write" permission
         }
-        Promise::ok(())
+        Ok(())
     }
 
 
-    fn new_session(&mut self,
-                   params: ui_view::NewSessionParams,
-                   mut results: ui_view::NewSessionResults)
-                   -> Promise<(), Error>
+    async fn new_session(&self,
+                         params: ui_view::NewSessionParams,
+                         mut results: ui_view::NewSessionResults)
+                         -> Result<(), Error>
     {
         use ::capnp::traits::HasTypeId;
-        let params = pry!(params.get());
+        let params = params.get()?;
 
         if params.get_session_type() != web_session::Client::TYPE_ID {
-            return Promise::err(Error::failed("unsupported session type".to_string()));
+            return Err(Error::failed("unsupported session type".to_string()));
         }
 
-        let session = pry!(WebSession::new(pry!(params.get_user_info()),
-                                           pry!(params.get_context()),
-                                           pry!(params.get_session_params().get_as())));
+        let session = WebSession::new(params.get_user_info()?,
+                                      params.get_context()?,
+                                      params.get_session_params().get_as()?)?;
         let client: web_session::Client = capnp_rpc::new_client(session);
 
         // we need to do this dance to upcast.
         results.get().set_session(ui_session::Client { client : client.client});
-        Promise::ok(())
+        Ok(())
     }
 }
 
-pub async fn main() -> Result<(), Box<dyn (::std::error::Error)>> {
+pub async fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     use ::std::os::unix::io::{FromRawFd};
 
     let stream: ::std::os::unix::net::UnixStream = unsafe { FromRawFd::from_raw_fd(3) };

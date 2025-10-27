@@ -11,9 +11,9 @@ name = "server"
 path = "src/main.rs"
 
 [dependencies]
-capnp = "0.21"
-capnp-rpc = "0.21"
+capnp = "0.22"
+capnp-rpc = "0.22"
 futures = "0.3"
-sandstorm = "0.21.0"
+sandstorm = "0.22.0"
 tokio = { version = "1.0.0", features = ["macros", "net", "rt"]}
 tokio-util = { version = "0.7.0", features = ["compat"] }
