@@ -19,6 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+use std::rc::Rc;
+
 use capnp::Error;
 use capnp_rpc::{RpcSystem, twoparty, rpc_twoparty_capnp};
 
@@ -65,7 +67,7 @@ impl WebSession {
 impl ui_session::Server for WebSession {}
 
 impl web_session::Server for WebSession {
-    async fn get(&self,
+    async fn get(self: Rc<Self>,
            params: web_session::GetParams,
            mut results: web_session::GetResults)
 	-> Result<(), Error>
@@ -126,7 +128,7 @@ impl web_session::Server for WebSession {
         }
     }
 
-    async fn put(&self,
+    async fn put(self: Rc<Self>,
            params: web_session::PutParams,
            mut results: web_session::PutResults)
 	-> Result<(), Error>
@@ -159,7 +161,7 @@ impl web_session::Server for WebSession {
         Ok(())
     }
 
-    async fn delete(&self,
+    async fn delete(self: Rc<Self>,
                     params: web_session::DeleteParams,
                     mut results: web_session::DeleteResults)
 	-> Result<(), Error>
@@ -267,7 +269,7 @@ impl UiView {
 
 impl ui_view::Server for UiView {
     async fn get_view_info(
-        &self,
+        self: Rc<Self>,
         _params: ui_view::GetViewInfoParams,
         mut results: ui_view::GetViewInfoResults)
         -> Result<(), Error>
@@ -300,7 +302,7 @@ impl ui_view::Server for UiView {
     }
 
 
-    async fn new_session(&self,
+    async fn new_session(self: Rc<Self>,
                          params: ui_view::NewSessionParams,
                          mut results: ui_view::NewSessionResults)
                          -> Result<(), Error>
