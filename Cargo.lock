@@ -16,18 +16,18 @@ checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 
 [[package]]
 name = "capnp"
-version = "0.23.0"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbffb6e69e1ea2cf518ac5037a78a223ecb82b4ac81e7ab33cb5211b43d712ac"
+checksum = "3fe67a3f89b693d2163cf3d94129125463ac5913e1c4322f2db905aa631d3c67"
 dependencies = [
  "embedded-io",
 ]
 
 [[package]]
 name = "capnp-futures"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5ba7ae93ff689252798d8c71274512738ac2f3993da2adc961aa7441d2a27e6"
+checksum = "ea18fe7b0b0ee3a52914e9269dd97fea83119d6003771a35a807b600980290f0"
 dependencies = [
  "capnp",
  "futures-channel",
@@ -36,9 +36,9 @@ dependencies = [
 
 [[package]]
 name = "capnp-rpc"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c263a9de8bfe8a151e30f6d32e620483dcdca4ed8fed6913be9bd9803cbd4e5e"
+checksum = "089dea70b5f64476710708453fda2d366cd0e063aa823be39b62bf23482f0197"
 dependencies = [
  "capnp",
  "capnp-futures",
@@ -47,9 +47,9 @@ dependencies = [
 
 [[package]]
 name = "capnpc"
-version = "0.23.0"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd5d2819d3b840c7f3f415cd6ab94f82d5bf4b07750e319ac88b89267db7af67"
+checksum = "642d771bf5096ad1963fdbb9839f22e7bb1e308a2d1456fb1ad6cc99bb691115"
 dependencies = [
  "capnp",
 ]
@@ -220,9 +220,9 @@ dependencies = [
 
 [[package]]
 name = "sandstorm"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a22b77cffb37223adcc11711854854e2477e0ae25bdb0ee02a1b54ec1c19b3c8"
+checksum = "b93a9608169a969a959849ae8e4b93ddbc97c7248c8fa4749933e6e18120718d"
 dependencies = [
  "capnp",
  "capnpc",
